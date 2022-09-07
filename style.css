@@ -22,3 +22,16 @@ img {
   max-width: 50%;
   height: auto;
 }
+.flex-center{
+  max-width: 40%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.body {
+  background-image:"./Images_Index/pexels-joão-jesus-925743.jpg";
+}
+

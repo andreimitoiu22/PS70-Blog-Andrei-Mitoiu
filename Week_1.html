@@ -78,46 +78,46 @@ The biggest problem with this idea is the required strength of the motors to pul
 
 <p>
   
-  Face - Tracking shotgun microphone
+  ##Face - Tracking shotgun microphone
 
   In this project idea, I hope to achieve a product that is able to make audio recording more convenient by having the camera-attached shotgun microphone following the face in front of the camera. 
   
   
   
   
-  How will it track the face?
+  ###<span style="color:rgb(78, 78, 78) ;">How will it track the face?</span>
   
   There are two ways in which the facial data can be captured: either through the live feed of the actual camera, or through a separate webcam placed on the camera. Because working with the live feed from the camera might interfere with its performance and will lead to less flexibility in the type of camera angles I can capture, I believe the best course of action is to use the live feed from an attached wide-angle webcam for facial tracking.
-  Facial tracking softwares has improved over the last couple of years, so finding latency free libraries will hopefully be easier. For now, I am thinking of using OpenCV’s Face Recognition for Python.
-  https://docs.opencv.org/3.4/da/d60/tutorial_face_main.html
+  Facial tracking softwares has improved over the last couple of years, so finding latency free libraries will hopefully be easier. For now, I am thinking of using [OpenCV’s Face Recognition for Python](https://docs.opencv.org/3.4/da/d60/tutorial_face_main.html).
   
-  How will the microphone move?
-  
+  <div class="flex-center-full-size">
+    ![Image]](./Images_week_1/maxresdefault.jpg)
+  </div>
+
+  ###<span style="color:rgb(78, 78, 78) ;">How will the microphone move?</span>
+
   I think that the microphone could move with the help of two motors, each designated for one of the two axes. Depending on the data received from the facial recognition software, the microphone will move accordingly. For initial tests, I might attach a laser to the microphone to ensure he points at the person’s mouth accurately.
   
-  What are some potential issues?
+  <div class="flex-center-full-size">
+    ![Image]](./Images_week_1/Modified_shotgun.png)
+  </div>
   
-  Because I hope this to be a hand-free robot, I might have to use non-cable alternatives (such as bluetooth and wi-fi transmission techniques) to transfer the coordinates of the facial data - which in turn might create latency issues.
-  Furthermore, the motors attached to the microphone might be too loud and therefore ruin the audio recorded by the shotgun (further tests are needed).
-    
+  ###<span style="color:rgb(185, 185, 185) ;">What are some potential issues?</span>
+  
+  <span style="color:rgb(255, 255, 255) ;">Because I hope this to be a hand-free robot, I might have to use non-cable alternatives (such as bluetooth and wi-fi transmission techniques) to transfer the coordinates of the facial data - which in turn might create latency issues.
+    Furthermore, the motors attached to the microphone might be too loud and therefore ruin the audio recorded by the shotgun (further tests are needed) - but I will also try to attach a light microphone so the motors aren't strained.</span>
+   
   
 <p\>
 
+<p>
+  #<span style="color:rgb(255, 255, 255) ;"> OTHER FIRST WEEK EXPERIENCES</span>
+  <span style="color:rgb(255, 255, 255) ;"> In the first week, the assignment was centered around creating a website using HTML and GitHub, and I was familliar with none. Fortunately, I was able to use a template, and with the limited knowledge I had about HTML, I was able to create this website.
+  The design is definitely not its strength, but I know that it is more than enough for the kind of work I will have to display on it. Whenever in doubt, I used the [W3Schools](https://www.w3schools.com/) website for information and help related to my issues. In the end, I was able to complete my [Home](./index.html), [About](./about.html) and [Week 1](./Week_1.html) page.</span>
 
 
 
-
-  
-
-
-IMAGE: Modified_shotgun.png
-
-
-![image of embroidery](./01_intro/sew.png)
-
-And here is a [link](../index.html).
-
-
+<p\>
 </xmp>
 </body>
 

@@ -31,7 +31,20 @@ img {
   justify-content: center;
 }
 
-.photo-center{
 
+.flex-center-full-size{
+  max-width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
+.costom{
+  max-width: 80%;
+  height: auto;
+  display: flex;
+  align-items: left;
+  justify-content: center;
+}

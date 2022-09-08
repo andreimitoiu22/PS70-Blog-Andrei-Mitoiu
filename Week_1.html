@@ -22,10 +22,49 @@
 <xmp style="display:none;">
 
 
-### About Me
+# FINAL PROJECT INITIAL IDEAS
 
-Here is an image:
-(not a good image) 
+#              
+
+##  <span style="color:rgb(44, 44, 44) ;">Hand-Tracked Camera Slider</span>
+<p>
+
+In this project idea, I hope to combine the precision of a motorized camera slider with the artistic character of human camerawork to create a camera slider that is controlled by a hand. The movement of the hand should not only be able to control the position of the camera but also its rotation.
+<p\>
+
+</p>
+
+
+###   <span style="color:rgb(78, 78, 78) ;">How will I track the hand?</span>
+
+There are a couple available options for hand tracking, yet the most accessible option seems to be through the use of OpenCV’s AI hand tracking software - which can be implemented in python. The AI program takes the live footage from a webcam and is able to track the hand relatively accurately. The co-ordinates can then be sent and used by the slider to move and rotate the camera accordingly.  
+<div class="flex-center-full-size">
+  ![Hand tracker]](./Images_week_1/1_mqo4Gy4DJyWmiYiBGewWnQ.png)
+
+</div>
+
+
+
+Latency will be a big downside of this code, hence why I considered a faster, more accurate hand tracking system which can be implemented with the “Ultraleap 3Di Stereo Hand Tracking Camera”, which while accurate - is very expensive.
+
+<div class="flex-center-full-size">
+  ![Hand tracker]](./Images_week_1/ultraleap-infrared-hand-tracking.jpg)
+</div>
+
+
+### <span style="color:rgb(78, 78, 78) ;">How will the slider move?</span>
+
+Two motors placed on each side of the slider will move the camera platform from left to right and vice versa using a belt. On the camera platform, underneath the camera will be placed a 360 degrees motor that will be able to rotate the camera.
+
+<div class="flex-center-full-size">
+  ![Diagram]](./Images_week_1/IMG-0331.PNG)
+</div>
+
+###<span style="color:rgb(78, 78, 78) ;">What are some potential issues?</span>
+
+
+The biggest problem with this idea is the required strength of the motors to pull and rotate the camera - which might mean more expensive motors will be required. To combat this issue, I am willing to use a lighter camera (e.g. a webcam or a smartphone), and remove the camera rotation feature of the slider (if the rotating motor is too heavy for the pulling motors).
+<p\>
 
 ![image of embroidery](./01_intro/sew.png)
 

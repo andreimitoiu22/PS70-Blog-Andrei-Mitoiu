@@ -17,6 +17,11 @@
 
 <body>
 
+  <style>
+    body{
+        background-image:url(./Images_Index/pexels-joão-jesus-925743.jpg);
+    }
+</style>
 
 
 <xmp style="display:none;">
@@ -26,18 +31,23 @@
 
 #              
 
-##  <span style="color:rgb(44, 44, 44) ;">Hand-Tracked Camera Slider</span>
+##  <span style="color:rgb(44, 44, 44) ;">Hand-Controlled Camera Slider</span>
 <p>
 
 In this project idea, I hope to combine the precision of a motorized camera slider with the artistic character of human camerawork to create a camera slider that is controlled by a hand. The movement of the hand should not only be able to control the position of the camera but also its rotation.
 <p\>
 
+  <div class="flex-center-full-size">
+    ![Hand tracker]](./Images_week_1/s-l500.jpg)
+  </div>
+  
+
 </p>
 
 
-###   <span style="color:rgb(78, 78, 78) ;">How will I track the hand?</span>
+###   <span style="color:rgb(78, 78, 78) ;">How will it track the hand?</span>
 
-There are a couple available options for hand tracking, yet the most accessible option seems to be through the use of OpenCV’s AI hand tracking software - which can be implemented in python. The AI program takes the live footage from a webcam and is able to track the hand relatively accurately. The co-ordinates can then be sent and used by the slider to move and rotate the camera accordingly.  
+There are a couple available options for hand tracking, yet the most accessible option seems to be through the use of [OpenCV’s AI hand tracking software](https://medium.com/analytics-vidhya/hand-detection-and-finger-counting-using-opencv-python-5b594704eb08) - which can be implemented in python. The AI program takes the live footage from a webcam and is able to track the hand relatively accurately. The co-ordinates can then be sent and used by the slider to move and rotate the camera accordingly.  
 <div class="flex-center-full-size">
   ![Hand tracker]](./Images_week_1/1_mqo4Gy4DJyWmiYiBGewWnQ.png)
 
@@ -45,7 +55,7 @@ There are a couple available options for hand tracking, yet the most accessible 
 
 
 
-Latency will be a big downside of this code, hence why I considered a faster, more accurate hand tracking system which can be implemented with the “Ultraleap 3Di Stereo Hand Tracking Camera”, which while accurate - is very expensive.
+Latency will be a big downside of this code, hence why I considered a faster, more accurate hand tracking system which can be implemented with the [Ultraleap 3Di Stereo Hand Tracking Camera](https://www.robotshop.com/en/ultraleap-3di-stereo-hand-tracking-camera.html?gclid=Cj0KCQjwpeaYBhDXARIsAEzItbE8lSrjxBlkWlPLjyrkQH4SEMNEySUs_9yjrZqXhoaMnV8A2bLilY4aAsR7EALw_wcB), which while accurate - is very expensive.
 
 <div class="flex-center-full-size">
   ![Hand tracker]](./Images_week_1/ultraleap-infrared-hand-tracking.jpg)
@@ -65,6 +75,43 @@ Two motors placed on each side of the slider will move the camera platform from 
 
 The biggest problem with this idea is the required strength of the motors to pull and rotate the camera - which might mean more expensive motors will be required. To combat this issue, I am willing to use a lighter camera (e.g. a webcam or a smartphone), and remove the camera rotation feature of the slider (if the rotating motor is too heavy for the pulling motors).
 <p\>
+
+<p>
+  
+  Face - Tracking shotgun microphone
+
+  In this project idea, I hope to achieve a product that is able to make audio recording more convenient by having the camera-attached shotgun microphone following the face in front of the camera. 
+  
+  
+  
+  
+  How will it track the face?
+  
+  There are two ways in which the facial data can be captured: either through the live feed of the actual camera, or through a separate webcam placed on the camera. Because working with the live feed from the camera might interfere with its performance and will lead to less flexibility in the type of camera angles I can capture, I believe the best course of action is to use the live feed from an attached wide-angle webcam for facial tracking.
+  Facial tracking softwares has improved over the last couple of years, so finding latency free libraries will hopefully be easier. For now, I am thinking of using OpenCV’s Face Recognition for Python.
+  https://docs.opencv.org/3.4/da/d60/tutorial_face_main.html
+  
+  How will the microphone move?
+  
+  I think that the microphone could move with the help of two motors, each designated for one of the two axes. Depending on the data received from the facial recognition software, the microphone will move accordingly. For initial tests, I might attach a laser to the microphone to ensure he points at the person’s mouth accurately.
+  
+  What are some potential issues?
+  
+  Because I hope this to be a hand-free robot, I might have to use non-cable alternatives (such as bluetooth and wi-fi transmission techniques) to transfer the coordinates of the facial data - which in turn might create latency issues.
+  Furthermore, the motors attached to the microphone might be too loud and therefore ruin the audio recorded by the shotgun (further tests are needed).
+    
+  
+<p\>
+
+
+
+
+
+  
+
+
+IMAGE: Modified_shotgun.png
+
 
 ![image of embroidery](./01_intro/sew.png)
 

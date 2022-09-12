@@ -48,3 +48,15 @@ img {
   align-items: left;
   justify-content: center;
 }
+
+.two-image-row{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+.half-width-image{
+  width: 45%;
+  height: auto;
+  object-fit: cover;
+
+}

@@ -8,6 +8,10 @@
 <nav class="navbar navbar-expand-sm navbar-light bg-light">
   <div style="align-items: left; justify-content:left;" class="container-fluid">
     <h3 class="nav-title"> PS70: Intro to Digital Fabrication</h3>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/arduino-light.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/arduino.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script> 
     <div class="navbar-nav">
       <h4><a class="nav-link" href="./index.html">Home</a></h4>
       <h4><a class="nav-link" href="./about.html">About me</a></h4>
@@ -17,20 +21,79 @@
 
 <body>
 
-
+  
 
 <xmp style="display:none;">
 
 
-### About Me
+  #This week's assignment
 
-Here is an image:
-(not a good image) 
-
-![image of embroidery](./01_intro/sew.png)
-
-And here is a [link](../index.html).
-
+  In this week’s assignment, we had to use the Arduino board to make a couple electrical components do something. After learning the basics of C programming, I came up with a basic idea of a program that, depending on the output from an ultrasonic distance sensor, will light up more or less light bulbs that are placed in a sequence. A similar concept is usually implemented with distance sensors on cars, as it is a good visual aid for drivers to understand the distance of the car from the nearest object.
+  
+  ##The schematic
+  But first, I knew I had to draw a schematic diagram for my project that I would then implement using a breadboard. I used [this website](https://www.circuit-diagram.org/) to draw it, as it was intuitive and had all the necessary components. To summarize, I connected each LED to a pin from the Arduino Uno (that would eventually be set as output) and then connected it to the ground using a 10k ohms resistor. Then, I connected the “VCC” to the 5V power supply pin, the “GND” to the ground, and the other two (the “TRIG” and “ECHO”) to two other pins that would eventually be set as input pins. Below, the sketch of the “machine” can be observed, as well as the final, wired machine (which did not respect the exact pins that were in the scheme due to convenience).
+  
+  
+  ##The code
+  
+  While this week I learned object oriented programming in C#, it did not need it for my idea.
+  I knew that fundamentally, my code would need to take the information from the ultrasonic sensor, process it, and then output signals to light up or close the different light bulbs. Below you can see the code of the setup function, where I assign all the pins. 
+  
+  <pre>
+    <font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">trigPin</font> <font color="#434f54">=</font> <font color="#000000">11</font><font color="#000000">;</font>
+    <font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">echoPin</font> <font color="#434f54">=</font> <font color="#000000">10</font><font color="#000000">;</font>
+    <font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">green1Pin</font> <font color="#434f54">=</font> <font color="#000000">2</font><font color="#000000">;</font>
+    <font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">green2Pin</font> <font color="#434f54">=</font> <font color="#000000">4</font><font color="#000000">;</font>
+    <font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">yellowPin</font> <font color="#434f54">=</font> <font color="#000000">6</font><font color="#000000">;</font>
+    <font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">bluePin</font> <font color="#434f54">=</font> <font color="#000000">8</font><font color="#000000">;</font>
+    <font color="#00979c">long</font> <font color="#000000">duration</font><font color="#000000">;</font>
+    <font color="#00979c">int</font> <font color="#000000">distance</font><font color="#000000">;</font>
+    <font color="#00979c">void</font> <font color="#5e6d03">setup</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+     &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">trigPin</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">echoPin</font><font color="#434f54">,</font> <font color="#00979c">INPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">green1Pin</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">green2Pin</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">yellowPin</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">bluePin</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">9600</font><font color="#000000">)</font><font color="#000000">;</font>
+    <font color="#000000">}</font>
+    
+    </pre>
+  ###Finding ways to interpret the distance sensor
+  I did not know, however, how to interpret the “TRIG” and “ECHO” information that was coming from the sensor. So I did some research, and found [this website](https://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/). I learned that one of the two cylindrical units (the one named “TRIG”) is the one that sends the ultrasonic signal, and the other is the one that measures the time taken for the wave to reflect back. You first need to enable the ultrasonic waves, so that the sensor can have something to measure.
+  <pre>
+    <font color="#00979c">void</font> <font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font> &nbsp; 
+    <font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">trigPin</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">2</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">trigPin</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">10</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">trigPin</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;
+     &nbsp;<font color="#000000">duration</font> <font color="#434f54">=</font> <font color="#d35400">pulseIn</font><font color="#000000">(</font><font color="#000000">echoPin</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+    <font color="#000000">}</font>
+    
+    </pre>
+  Interpreting that output is based on the fundamental physics property that speed is equal to distance divided by the time. Hence we know the sensor’s wave’s speed and the time it takes to reach it and reflect it back, we can find out the distance. 
+  (insert code snippets)
+  While I understand the code in its entirety, I copied most of it, and made sure to credit the creator in my Code.
+  
+  ###The implementation of input and output devices
+  
+  After getting the distance from the sensor, all I had to do was write a couple “if”statements that activated certain light bulbs at certain distances from the obstacle. For example, if the distance was over 20 but under 30, only the first two bulbs can light up. The code below shows the if statements.
+  (code)
+  After fixing some coding errors, I uploaded the code, and it worked. Here is a video bellow showcasing the machine.
+  
+  #Update on my final project
+  
+  Im going to stick with the slider
+  I might use distance sensors to modivy the output of the slider 
+  However, it will not give accurate measurements of hand rotation
+  I believe my coding option seems most doable with hand tacking
+  Gesture sensors are out of question - too limited
+  Perhaps add them just for more precise features such as on and off
+  The only fundamental problem with it is that it cannot onyl accurately track the X rotation of the 
+  Experimented this week with servo motors - the kind I might be able to use for a prototypes
+  I will need exact motors for the big prototype  
 
 </xmp>
 </body>

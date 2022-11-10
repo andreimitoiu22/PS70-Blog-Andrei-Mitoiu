@@ -22,16 +22,124 @@
 <xmp style="display:none;">
 
 
-### About Me
 
-Here is an image:
-(not a good image) 
+  For this week, we had to create a machine using stepper motors and the items present in the lab. We also had to demonstrate how we would first calibrate the motor’s position. I decided that this week’s assignment would be a great start to the prototyping process of my final project, so I wanted to build a camera slider. I knew that I wanted to use aluminum extrusions for the rails, CNC-cut wooden legs, a laser-cut platform, bolts, a belt, a limit switch, bearings and other 3D printed elements to create the slider. The slider, after the initialisation phase, would be controlled by two buttons.
+  ##Building the skeleton
+  For this project, I didn’ want to build it from scratch in 3D, as I did not know what materials were available to me. Therefore, I started by CNC milling the wooden legs - which were similar in design to those that I designed to those I created in week 8, only now with holes that allow aluminum extrusions to fit in well. After modeling the legs in fusion, and sending the consequent DXF file to the CNC machine, I realized that the machine could not cut the hole from the inside as it was too detailed and small. I decided to mill out the legs regardless, and then find a way to use them.
+  <div class="two-image-row">
+    <iframe src="https://college401.autodesk360.com/shares/public/SH9285eQTcf875d3c5394868f2f17436c1f1?mode=embed" width="640" height="480" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  frameborder="0"></iframe>
+    <img src="./Images_Week_10/" class="half-width-image"/>
+  </div> 
+  In the end, I decided not to use the legs, as I discovered that the most secure way to hold aluminum extrusions together is with other aluminum extrusions. Therefore, I knew I had to precisely cut the aluminum extrusions to the length of the legs - however, what I came to realize was that I could not use any electrical saw in the lab to cut them. Out of sheer laziness - and also stupidity - I decided to cut the extrusions with a saw manually instead of going to a different lab where I could’ve cut them more easily and more precisely with a vertical electrical saw. This took me a lot of time, as even after the five minutes it would take to cut an extrusion in its entirety I had to file them down so that they were angled properly. After a lot of inefficient work, I was able to build the skeleton - as can be seen below.
+  <div class = "flex-center-full-size">
+    <img src="./Images_Week_10/20221105_205016.jpg">
+  </div> 
+  ##Creating the platform
+  For the platform, I knew I had to create something light that could be easily moved by the motor. I was not sure if I would even use a high enough voltage at this point of the project, so the lightness of the platform was necessary. I created a quick sketch in Fusion (as can be seen below) after measuring the dimensions between the rails. I then quickly laser cutted it from light wood. I then drilled 4 horizontally extended holes at the approximate places where the bearings would be reaching the inside of the skeleton’s rails. I then installed the rails by using certain bolts and nuts to tighten them together at the right vertical and horizontal places. Below you can see the sketch of the platform and two angles from the bottom and from the top of the platform sitting on the rail.
+  <div class="row">
+    <div class="col-sm-4 flex-center">
+      <img src="./Images_Week_10/Platform that was laser cutted.PNG">
+    </div>
+    <div class="col-sm-4 flex-center">
+      <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.59 PM (5).jpeg">
+    </div>
+    <div class="col-sm-4 flex-center">
+      <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.59 PM (3).jpeg">
+    </div>
+  </div>
+  ##Other 3D printed pieces
+  After looking at the machines around the lab, I knew there were three 3D pieces that I had to print: the belt holders, the opposite bearing supporting the belt and the holder for the limit switch. I modeled all of them in Fusion 360, and made sure they could all be attached to the aluminum extrusions or wooden platform with screws. Below you can see the final 3D models.
+  (all three 3D models)
+  However, as all pieces integrated different elements of specific millimetric sizes, it took at least two iterations and 3D prints to get them right, as I was not getting the measurements properly. 
+  (photo of all the iterations it took)
+  These were the final 3D printed pieces integrated in the build:
+  (three photos of the 3D prints)
+  ##The wiring
+  Interestingly, this part of the project was the easiest, as I decided to use a low-voltage driver [named]() that did not need any external input for power. All I had to do was connect the ground pins, 5V pin, and three other digital pins to the driver, the ground and a digital pin to the limit switch, and the ground and two digital pins (which would be initiated as pullup) to the two controlling buttons. I used [this tutorial](https://arduinogetstarted.com/tutorials/arduino-limit-switch) for the limit switch and [this tutorial](https://docs.arduino.cc/tutorials/generic/digital-input-pullup) for the buttons. Below, you can see the wiring schemes that I got from the two tutorials.
+  (image of limit switch wiring) (image of the button wiring)
+  ##Coding
+  
+  The coding for this week was relatively straightforward, as for the only elements I didn’t know how to use, I just followed the built-in libraries and examples of the arduino IDE. I also used the [limit switch tutorial](https://arduinogetstarted.com/tutorials/arduino-limit-switch) as an example of how to code for the limit switch using an intuitive library named “ezButton”. In the code below, I first create a function that returns a boolean if the switch is touched. Then, in the setup function, I make the platform go left (by decrementing the steps function of the motors) until it reaches the limit switch. After that, the program goes to the loop function, which verifies which button is pressed, and increments the steps function of the motor to drive the platform in the appropriate direction (left or right). If the left button is still pressed when the platform reaches the farthest it can go to the left, it does not work. I measured with another program the amount of steps it takes for the motor to drive the platform to the extreme right of the rail (which is around 1660), so that if the motor reaches it, it means the platform is as far as it can go to the right and it should stop. Below, I posted the code with all relevant comments placed in it.
 
-![image of embroidery](./01_intro/sew.png)
+  <pre>
 
-And here is a [link](../index.html).
-
-
+    <font color="#95a5a6">&#47;*</font>
+    <font color="#95a5a6"> Stepper Motor Control - one revolution</font>
+    <font color="#95a5a6"></font>
+    <font color="#95a5a6"> This program drives a unipolar or bipolar stepper motor.</font>
+    <font color="#95a5a6"> The motor is attached to digital pins 8 - 11 of the Arduino.</font>
+    <font color="#95a5a6"></font>
+    <font color="#95a5a6"> The motor should revolve one revolution in one direction, then</font>
+    <font color="#95a5a6"> one revolution in the other direction.</font>
+    <font color="#95a5a6"></font>
+    <font color="#95a5a6"></font>
+    <font color="#95a5a6"> Created 11 Mar. 2007</font>
+    <font color="#95a5a6"> Modified 30 Nov. 2009</font>
+    <font color="#95a5a6"> by Tom Igoe</font>
+    <font color="#95a5a6"></font>
+    <font color="#95a5a6"> * Created by ArduinoGetStarted.com</font>
+    <font color="#95a5a6"> *</font>
+    <font color="#95a5a6"> * This example code is in the public domain</font>
+    <font color="#95a5a6"> *</font>
+    <font color="#95a5a6"> * Tutorial page: </font><u><font color="#95a5a6">https:&#47;&#47;arduinogetstarted.com&#47;tutorials&#47;arduino-limit-switch</font></u><font color="#95a5a6"></font>
+    <font color="#95a5a6"> *&#47;</font>
+    
+    <font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">ezButton</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+    <font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">Stepper</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+    
+    <b><font color="#d35400">ezButton</font></b> <font color="#000000">limitSwitch</font><font color="#000000">(</font><font color="#000000">7</font><font color="#000000">)</font><font color="#000000">;</font> &nbsp;<font color="#434f54">&#47;&#47; create ezButton object that attach to pin 7;</font>
+    
+    <font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">max_number_of_steps</font> <font color="#434f54">=</font> <font color="#000000">1660</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;This is the macimum amount of steps the slider can take to the right</font>
+    <font color="#00979c">int</font> <font color="#000000">steps_taken</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; Variable that measures the steps taken by the slider from left to right</font>
+    
+    <font color="#00979c">bool</font> <font color="#000000">limit</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font> <font color="#434f54">&#47;&#47;This function returns if the limit switch is touched or not</font>
+     &nbsp;<font color="#000000">limitSwitch</font><font color="#434f54">.</font><font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; MUST call the loop() function first to use the ezButton library</font>
+    
+     &nbsp;<font color="#5e6d03">if</font><font color="#000000">(</font><font color="#000000">limitSwitch</font><font color="#434f54">.</font><font color="#d35400">isPressed</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#5e6d03">or</font> <font color="#000000">limitSwitch</font><font color="#434f54">.</font><font color="#d35400">getState</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">==</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">{</font> <font color="#434f54">&#47;&#47;If the limit switch is touched, then it returns true, else it returns false</font>
+     &nbsp;&nbsp;&nbsp;<font color="#5e6d03">return</font> <font color="#00979c">true</font><font color="#000000">;</font>
+     &nbsp;<font color="#000000">}</font>
+     &nbsp;<font color="#5e6d03">else</font><font color="#000000">{</font>
+     &nbsp;&nbsp;&nbsp;<font color="#5e6d03">return</font> <font color="#00979c">false</font><font color="#000000">;</font>
+     &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+    <font color="#000000">}</font>
+    
+    <font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">stepsPerRevolution</font> <font color="#434f54">=</font> <font color="#000000">200</font><font color="#000000">;</font> &nbsp;<font color="#434f54">&#47;&#47; change this to fit the number of steps per revolution</font>
+    
+    <b><font color="#d35400">Stepper</font></b> <font color="#000000">myStepper</font><font color="#000000">(</font><font color="#000000">stepsPerRevolution</font><font color="#434f54">,</font> <font color="#000000">8</font><font color="#434f54">,</font> <font color="#000000">9</font><font color="#434f54">,</font> <font color="#000000">10</font><font color="#434f54">,</font> <font color="#000000">11</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; I initiate the pins I use for the stepper motor</font>
+    
+    <font color="#00979c">void</font> <font color="#5e6d03">setup</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+     &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">9600</font><font color="#000000">)</font><font color="#000000">;</font>
+    
+     &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">5</font><font color="#434f54">,</font> <font color="#00979c">INPUT_PULLUP</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;The pin for the right button</font>
+     &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">4</font><font color="#434f54">,</font> <font color="#00979c">INPUT_PULLUP</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;The pin for the left button</font>
+    
+     &nbsp;<font color="#000000">limitSwitch</font><font color="#434f54">.</font><font color="#d35400">setDebounceTime</font><font color="#000000">(</font><font color="#000000">50</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; set debounce time to 50 milliseconds - for the limit switch</font>
+     &nbsp;<font color="#5e6d03">while</font> <font color="#000000">(</font><font color="#000000">limit</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">==</font> <font color="#00979c">false</font><font color="#000000">)</font><font color="#000000">{</font> <font color="#434f54">&#47;&#47;If the limit switch is not touched</font>
+     &nbsp;&nbsp;&nbsp;<font color="#000000">myStepper</font><font color="#434f54">.</font><font color="#d35400">step</font><font color="#000000">(</font><font color="#434f54">-</font><font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;Go to the left untill you reach it</font>
+     &nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">10</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+    <font color="#000000">}</font>
+    
+    <font color="#00979c">void</font> <font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+     &nbsp;<font color="#434f54">&#47;&#47;I read the left and right button</font>
+     &nbsp;<font color="#00979c">int</font> <font color="#000000">right_button</font> <font color="#434f54">=</font> <font color="#d35400">digitalRead</font><font color="#000000">(</font><font color="#000000">4</font><font color="#000000">)</font><font color="#000000">;</font> 
+     &nbsp;<font color="#00979c">int</font> <font color="#000000">left_button</font> <font color="#434f54">=</font> <font color="#d35400">digitalRead</font><font color="#000000">(</font><font color="#000000">5</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">right_button</font> <font color="#434f54">==</font> <font color="#00979c">HIGH</font> <font color="#5e6d03">and</font> <font color="#000000">left_button</font> <font color="#434f54">==</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">{</font> <font color="#434f54">&#47;&#47;If the right button is pressed</font>
+     &nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">steps_taken</font> <font color="#434f54">&lt;</font> <font color="#000000">max_number_of_steps</font><font color="#000000">)</font><font color="#000000">{</font> <font color="#434f54">&#47;&#47; And also if the platform has not yet reached the extreme right </font>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">myStepper</font><font color="#434f54">.</font><font color="#d35400">step</font><font color="#000000">(</font><font color="#000000">5</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;move by five motor steps clockwise</font>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">steps_taken</font> <font color="#434f54">=</font> <font color="#000000">steps_taken</font> <font color="#434f54">+</font> <font color="#000000">5</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;store how far this was moved</font>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">10</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+     &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+     &nbsp;<font color="#5e6d03">else</font> <font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">right_button</font> <font color="#434f54">==</font> <font color="#00979c">LOW</font> <font color="#5e6d03">and</font> <font color="#000000">left_button</font> <font color="#434f54">==</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">{</font> <font color="#434f54">&#47;&#47;If the left button is pressed</font>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">steps_taken</font> <font color="#434f54">&gt;</font> <font color="#000000">0</font><font color="#000000">)</font><font color="#000000">{</font> <font color="#434f54">&#47;&#47; And also if the platform has not yet reached the extreme left</font>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">myStepper</font><font color="#434f54">.</font><font color="#d35400">step</font><font color="#000000">(</font><font color="#434f54">-</font><font color="#000000">5</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;move by five motor steps anticlockwise</font>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">steps_taken</font> <font color="#434f54">=</font> <font color="#000000">steps_taken</font> <font color="#434f54">-</font> <font color="#000000">5</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;store how far this was moved</font>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">10</font><font color="#000000">)</font><font color="#000000">;</font>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+     &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+    <font color="#000000">}</font>
+    </pre>
 </xmp>
 </body>
 

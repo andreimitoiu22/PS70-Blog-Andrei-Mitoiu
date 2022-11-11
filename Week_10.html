@@ -28,38 +28,62 @@
   For this project, I didn’ want to build it from scratch in 3D, as I did not know what materials were available to me. Therefore, I started by CNC milling the wooden legs - which were similar in design to those that I designed to those I created in week 8, only now with holes that allow aluminum extrusions to fit in well. After modeling the legs in fusion, and sending the consequent DXF file to the CNC machine, I realized that the machine could not cut the hole from the inside as it was too detailed and small. I decided to mill out the legs regardless, and then find a way to use them.
   <div class="two-image-row">
     <iframe src="https://college401.autodesk360.com/shares/public/SH9285eQTcf875d3c5394868f2f17436c1f1?mode=embed" width="640" height="480" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  frameborder="0"></iframe>
-    <img src="./Images_Week_10/" class="half-width-image"/>
+    <img src="./Images_Week_10/20221110_173818.jpg" class="half-width-image"/>
   </div> 
   In the end, I decided not to use the legs, as I discovered that the most secure way to hold aluminum extrusions together is with other aluminum extrusions. Therefore, I knew I had to precisely cut the aluminum extrusions to the length of the legs - however, what I came to realize was that I could not use any electrical saw in the lab to cut them. Out of sheer laziness - and also stupidity - I decided to cut the extrusions with a saw manually instead of going to a different lab where I could’ve cut them more easily and more precisely with a vertical electrical saw. This took me a lot of time, as even after the five minutes it would take to cut an extrusion in its entirety I had to file them down so that they were angled properly. After a lot of inefficient work, I was able to build the skeleton - as can be seen below.
   <div class = "flex-center-full-size">
     <img src="./Images_Week_10/20221105_205016.jpg">
   </div> 
   ##Creating the platform
-  For the platform, I knew I had to create something light that could be easily moved by the motor. I was not sure if I would even use a high enough voltage at this point of the project, so the lightness of the platform was necessary. I created a quick sketch in Fusion (as can be seen below) after measuring the dimensions between the rails. I then quickly laser cutted it from light wood. I then drilled 4 horizontally extended holes at the approximate places where the bearings would be reaching the inside of the skeleton’s rails. I then installed the rails by using certain bolts and nuts to tighten them together at the right vertical and horizontal places. Below you can see the sketch of the platform and two angles from the bottom and from the top of the platform sitting on the rail.
-  <div class="row">
-    <div class="col-sm-4 flex-center">
-      <img src="./Images_Week_10/Platform that was laser cutted.PNG">
-    </div>
-    <div class="col-sm-4 flex-center">
-      <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.59 PM (5).jpeg">
-    </div>
-    <div class="col-sm-4 flex-center">
-      <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.59 PM (3).jpeg">
-    </div>
-  </div>
+  For the platform, I knew I had to create something light that could be easily moved by the motor. I was not sure if I would even use a high enough voltage at this point of the project, so the lightness of the platform was necessary. I created a quick sketch in Fusion (as can be seen below) after measuring the dimensions between the rails. 
+  <div class = "flex-center-full-size">
+    <img src="./Images_Week_10/Platform that was laser cutted.PNG">
+  </div> 
+
+  I then quickly laser cut it from light wood. I then drilled 4 horizontally extended holes at the approximate places where the bearings would be reaching the inside of the skeleton’s rails. I then installed the rails by using certain bolts and nuts to tighten them together at the right vertical and horizontal places. Below you can see the sketch of the platform and two angles from the bottom and from the top of the platform sitting on the rail.
+  
+  <div class="two-image-row">
+    <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.59 PM (5).jpeg">
+    <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.59 PM (3).jpeg">
+  </div> 
+
+  
   ##Other 3D printed pieces
   After looking at the machines around the lab, I knew there were three 3D pieces that I had to print: the belt holders, the opposite bearing supporting the belt and the holder for the limit switch. I modeled all of them in Fusion 360, and made sure they could all be attached to the aluminum extrusions or wooden platform with screws. Below you can see the final 3D models.
-  (all three 3D models)
+  <div class="two-image-row">
+    <iframe src="https://college401.autodesk360.com/shares/public/SH9285eQTcf875d3c5397fb13d3f32f4c51f?mode=embed" width="640" height="480" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  frameborder="0"></iframe>
+    <iframe src="https://college401.autodesk360.com/shares/public/SH9285eQTcf875d3c539a9e5a7f65dadfb42?mode=embed" width="640" height="480" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  frameborder="0"></iframe>
+  </div> 
+  <div class = "flex-center-full-size">
+    <iframe src="https://college401.autodesk360.com/shares/public/SH9285eQTcf875d3c539c8312465a6871861?mode=embed" width="640" height="480" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  frameborder="0"></iframe>  </div> 
   However, as all pieces integrated different elements of specific millimetric sizes, it took at least two iterations and 3D prints to get them right, as I was not getting the measurements properly. 
-  (photo of all the iterations it took)
+  <div class = "flex-center-full-size">
+    <img src="./Images_Week_10/20221110_173758.jpg">
+  </div> 
   These were the final 3D printed pieces integrated in the build:
-  (three photos of the 3D prints)
+  <div class="two-image-row">
+    <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.58 PM.jpeg">
+    <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.59 PM (2).jpeg">
+  </div>
+  <div class = "flex-center-full-size">
+    <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.59 PM (3).jpeg">
+  </div> 
   ##The wiring
-  Interestingly, this part of the project was the easiest, as I decided to use a low-voltage driver [named]() that did not need any external input for power. All I had to do was connect the ground pins, 5V pin, and three other digital pins to the driver, the ground and a digital pin to the limit switch, and the ground and two digital pins (which would be initiated as pullup) to the two controlling buttons. I used [this tutorial](https://arduinogetstarted.com/tutorials/arduino-limit-switch) for the limit switch and [this tutorial](https://docs.arduino.cc/tutorials/generic/digital-input-pullup) for the buttons. Below, you can see the wiring schemes that I got from the two tutorials.
-  (image of limit switch wiring) (image of the button wiring)
+  Interestingly, this part of the project was the easiest, as I decided to use a low-voltage driver [named L9110](https://www.amazon.com/KOOBOOK-Channels-Stepper-Controller-Arduino/dp/B07S98QQYL/ref=asc_df_B07S98QQYL/?tag=hyprod-20&linkCode=df0&hvadid=385215532707&hvpos=&hvnetw=g&hvrand=3362551731393215261&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9001999&hvtargid=pla-830907296301&psc=1&tag=&ref=&adgrpid=73789134890&hvpone=&hvptwo=&hvadid=385215532707&hvpos=&hvnetw=g&hvrand=3362551731393215261&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9001999&hvtargid=pla-830907296301) that did not need any external input for power. All I had to do was connect the ground pins, 5V pin, and three other digital pins to the driver, the ground and a digital pin to the limit switch, and the ground and two digital pins (which would be initiated as pullup) to the two controlling buttons. I used [this tutorial](https://arduinogetstarted.com/tutorials/arduino-limit-switch) for the limit switch and [this tutorial](https://docs.arduino.cc/tutorials/generic/digital-input-pullup) for the buttons. Below, you can see the wiring schemes that I got from the two tutorials.
+  <div class="two-image-row">
+    <img src="./Images_Week_10/arduino-limit-switch-wiring-diagram.jpg">
+    <img src="./Images_Week_10/Buttons_internal_pullup_diagram.jpg">
+  </div>
+
+  Here is also the wiring I made for the buttons, asthey functioned as a remote for the slider.
+
+  <div class = "flex-center-full-size">
+    <img src="./Images_Week_10/20221110_173758.jpg">
+  </div> 
+
   ##Coding
   
-  The coding for this week was relatively straightforward, as for the only elements I didn’t know how to use, I just followed the built-in libraries and examples of the arduino IDE. I also used the [limit switch tutorial](https://arduinogetstarted.com/tutorials/arduino-limit-switch) as an example of how to code for the limit switch using an intuitive library named “ezButton”. In the code below, I first create a function that returns a boolean if the switch is touched. Then, in the setup function, I make the platform go left (by decrementing the steps function of the motors) until it reaches the limit switch. After that, the program goes to the loop function, which verifies which button is pressed, and increments the steps function of the motor to drive the platform in the appropriate direction (left or right). If the left button is still pressed when the platform reaches the farthest it can go to the left, it does not work. I measured with another program the amount of steps it takes for the motor to drive the platform to the extreme right of the rail (which is around 1660), so that if the motor reaches it, it means the platform is as far as it can go to the right and it should stop. Below, I posted the code with all relevant comments placed in it.
+  The coding for this week was relatively straightforward, as for the only elements I didn’t know how to use, I just followed the built-in libraries and examples of the arduino IDE. I also used the [limit switch tutorial](https://arduinogetstarted.com/tutorials/arduino-limit-switch) as an example of how to code for the limit switch using an intuitive library named “ezButton”. In the code below, I first create a function that returns a boolean if the switch is touched. Then, in the setup function, I make the platform go left (by decrementing the steps function of the motors) until it reaches the limit switch. After that, the program goes to the loop function, which verifies which button is pressed, and increments the steps function of the motor to drive the platform in the appropriate direction (left or right). If the left button is still pressed when the platform reaches the farthest it can go to the left, it does not work. I measured with another program the amount of steps it takes for the motor to drive the platform to the extreme right of the rail (which is around 1660), so that if the motor reaches it, it means the platform is as far as it can go to the right and it should stop. Below, I posted the code with all relevant comments placed in it (along with the credits at the beggining).
 
   <pre>
 
@@ -140,6 +164,26 @@
      &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
     <font color="#000000">}</font>
     </pre>
+  
+  ##The final product
+  Initially, the platform initialises itself.
+  <div class = "flex-center-full-size">
+    <img src="./Images_Week_10/initialisation.gif">
+  </div> 
+
+  Then, the two buttons can be used to control the slider.
+  <div class = "flex-center-full-size">
+    <img src="./Images_Week_10/slider moving via buttons.gif">
+  </div> 
+
+  If it reaches the other limit of the slider, the motor stops and doesn't let the slider go further to the left.
+  <div class = "flex-center-full-size">
+    <img src="./Images_Week_10/Other edge.gif">
+    </div> 
+  #Final project update - what I learned from this prototype
+
+  After building this prototype, I realized that for my final project I would want to make a couple changes to this machine. For starters, I want to replace a driver with another that is able to provide the stepper motor more voltage - for more power and speed. I would also like to replace the legs with something either 3D printed or milled - as I would be able to create a more stable platform with perfectly parallel rails. I will also make the platform more sturdy and stable, as right now, the wheels aren’t well fixed on the platform and rails and fail sometimes. I will also add the two motors on the platform that will rotate the camera in two axes. Moving the belt and the edge motor below the slider would enable the platform to hold so many things - as leaving them like this would get in the way of the camera.
+    
 </xmp>
 </body>
 

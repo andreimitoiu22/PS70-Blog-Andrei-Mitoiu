@@ -43,19 +43,27 @@ The slider utilizes three stepper motors to control the three different kinds of
 
 ###Hardware
 
-
-<iframe src="https://college401.autodesk360.com/shares/public/SH9285eQTcf875d3c539e7697ced3276e1ac?mode=embed" width="640" height="480" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  frameborder="0"></iframe>
+<div class = "flex-center-full-size">
+  <iframe src="https://college401.autodesk360.com/shares/public/SH9285eQTcf875d3c539e7697ced3276e1ac?mode=embed" width="640" height="480" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  frameborder="0"></iframe>
+</div>
 For the slider I used a variety of pieces to put everything together - most of which being 3D prints. Below, you can see the 3D model of the moving platform. Except for the aluminum extrusions, most of the parts that can be seen there were designed either through 3D printing, laser cutting or CNC machining techniques. I have used [Fusion 360’s gear plugin](https://www.youtube.com/watch?v=ZakT54JIhB8) to create all the wheels that I used. It is also worth noting that while the rough 3D model does not look like it, the platform was mostly built with aluminum extrusion. I knew this would allow me more flexibility when putting things together. To mount the stepper motors, I used [this model](https://grabcad.com/library/nema-17-nema-23-stepper-motor-mounts-1) I found online and modified it, and 3D printed it. I used two belt holders - which were designed to easily hold the belt - and two belt “maintainers” - which were designed to restrict the belt’s unnecessary jitter. 
 
 (The belt holders image)
 The only pieces that cannot be seen in the overall 3D models are the [flange bearings](https://www.grainger.com/product/36UY68?gucid=N:N:PS:Paid:GGL:CSM-2295:4P7A1P:20501231&gclid=Cj0KCQiA4uCcBhDdARIsAH5jyUlZcdpHFG8l-w3xomzAxmqNxBb17Zc-zmBkZBq9C6h_WUk_e3B20eUaAnh6EALw_wcB&gclsrc=aw.ds) - which enabled both the x-axis and y axis rotation - the actual stepper motors, the wheels that would enable the overall platform to move and a couple screws I eventually added somewhere at the bottom of the platfrom to help the stability of the x-axis rotation.
+
+<div class="two-image-row">
+  <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.59 PM (5).jpeg">
+  <img src="./Images_Week_10/WhatsApp Image 2022-11-09 at 7.47.59 PM (3).jpeg">
+</div> 
 (Image of the bearing) (Image of the wheels) (Image of bearings)(Image of screws)
 
 Here is an image of the final built platform, and also the reason why this version of the slider doesn’t move. It was technically challenging to fixate the wheels so that they would hold on to the extrusion - and the platform almost always fell down. At some point throughout the build, when I was able to temporarily get the wheels to maintain the heavy platform, the machine was working well - however I did not get to film it. At that point, I was confident that I could make it work in its entirety before filming it, and it eventually started to fall apart.
 (Image final built platform) (wheels issue)
 
 After the platform, another important element of the slider was what was on the rail. In the 3D model below, I designed a mount for the stepper which attaches itself to the edge of the aluminum extrusion to hold the motor in the right position. You may also see what was on the other side of the stepper motor - a specifically designed, freely-moving rotary belt maintainer. The legs I designed are also present.
-
+<div class = "flex-center-full-size">
+  <iframe src="https://college401.autodesk360.com/shares/public/SH9285eQTcf875d3c53905da486487837e4a?mode=embed" width="640" height="480" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  frameborder="0"></iframe>
+</div>
 (3D model of the rail system thing)
 
 ###Wiring
@@ -294,7 +302,7 @@ This is the part of my project that did turn out well, as it works relatively as
 
 ###The joystick
 
-(3D model)
+<iframe src="https://college401.autodesk360.com/shares/public/SH9285eQTcf875d3c539743bc24330eda8d0?mode=embed" width="640" height="480" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  frameborder="0"></iframe>
 The joystick was the main, most complicated part of the build. I not only had to find ways to restrict the movements of the potentiometers so that they don’t reach their “dead zones” - in which they either have full resistance or none - but also create designs that placed them on top of one another accordingly.  That is why I created a hold for the y-axis rotation potentiometer with two small stoppers. Then, when designing the piece that would go onto the rotating part of the potentiometer, I would add a small extrusion that would go in between those two stoppers. This can be best understood through the photos below, as you can see in both how the mechanism restricted the movement on either side of the axis.
 (showcase the stopping mechanism for one) (for the other one)
 

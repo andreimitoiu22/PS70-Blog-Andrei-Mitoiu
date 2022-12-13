@@ -44,7 +44,7 @@ The slider utilizes three stepper motors to control the three different kinds of
 ###Hardware
 
 
-(3d MODEL)
+<iframe src="https://college401.autodesk360.com/shares/public/SH9285eQTcf875d3c539e7697ced3276e1ac?mode=embed" width="640" height="480" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  frameborder="0"></iframe>
 For the slider I used a variety of pieces to put everything together - most of which being 3D prints. Below, you can see the 3D model of the moving platform. Except for the aluminum extrusions, most of the parts that can be seen there were designed either through 3D printing, laser cutting or CNC machining techniques. I have used [Fusion 360’s gear plugin](https://www.youtube.com/watch?v=ZakT54JIhB8) to create all the wheels that I used. It is also worth noting that while the rough 3D model does not look like it, the platform was mostly built with aluminum extrusion. I knew this would allow me more flexibility when putting things together. To mount the stepper motors, I used [this model](https://grabcad.com/library/nema-17-nema-23-stepper-motor-mounts-1) I found online and modified it, and 3D printed it. I used two belt holders - which were designed to easily hold the belt - and two belt “maintainers” - which were designed to restrict the belt’s unnecessary jitter. 
 
 (The belt holders image)
@@ -72,7 +72,218 @@ At the hub of all wiring, I used an ESP-32 and three [A4988 Stepper Motor Driver
 
 For coding, it turned out to be a lot more challenging than I expected. For starters, I knew that I had to create the initialisation process - the slider had to know its position by going to its right until reaching the limit switch. Then, the communication with the controller ensues, and depending on the data received from the controller, it would move the stepper motors so that the 2-axis rotation and platform position matched that of the controller. The data - as set by the controller (and seen later on the website) - is received every tenth of a second. However, I did not get the opportunity to test this code, because the slider itself did not work out optimally. What I can say is that the code would not have been as smooth as I would have wanted, as the stepper motors move sequentially, not at the same time. Having them working at the same time would have implied a lot more coding knowledge and time that I didn’t have. I found a lot of great use in [this tutorial](https://www.makerguides.com/a4988-stepper-motor-driver-arduino-tutorial/) as it helped me understand how to move the stepper motors with only two pins (direction and step pins) and without any library (for flexibility purposes) and also of [this tutorial](https://randomnerdtutorials.com/esp-now-esp32-arduino-ide/) to understand how the receiving end of the radio communication worked. 
 
-(CODE)
+<pre>
+<font color="#95a5a6">&#47;*</font>
+<font color="#95a5a6"> &nbsp;Rui Santos</font>
+<font color="#95a5a6"> &nbsp;Complete project details at </font><u><font color="#95a5a6">https:&#47;&#47;RandomNerdTutorials.com&#47;esp-now-esp32-arduino-ide&#47;</font></u><font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;</font>
+<font color="#95a5a6"> &nbsp;Permission is hereby granted, free of charge, to any person obtaining a copy</font>
+<font color="#95a5a6"> &nbsp;of this software and associated documentation files.</font>
+<font color="#95a5a6"> &nbsp;</font>
+<font color="#95a5a6"> &nbsp;The above copyright notice and this permission notice shall be included in all</font>
+<font color="#95a5a6"> &nbsp;copies or substantial portions of the Software.</font>
+<font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;Further credit: </font><u><font color="#95a5a6">https:&#47;&#47;www.makerguides.com&#47;a4988-stepper-motor-driver-arduino-tutorial&#47;</font></u><font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;</font><u><font color="#95a5a6">https:&#47;&#47;arduinogetstarted.com&#47;tutorials&#47;arduino-limit-switch</font></u><font color="#95a5a6"></font>
+<font color="#95a5a6">*&#47;</font>
+
+<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">ezButton</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><font color="#000000">esp_now</font><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">WiFi</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+<font color="#434f54">&#47;&#47;pins of the stepper that moves the platform</font>
+<font color="#5e6d03">#define</font> <font color="#000000">dirPin_1</font> <font color="#000000">18</font>
+<font color="#5e6d03">#define</font> <font color="#000000">stepPin_1</font> <font color="#000000">23</font>
+<font color="#434f54">&#47;&#47;pins of the stepper that moves the X-axis</font>
+<font color="#5e6d03">#define</font> <font color="#000000">dirPin_2</font> <font color="#000000">19</font>
+<font color="#5e6d03">#define</font> <font color="#000000">stepPin_2</font> <font color="#000000">22</font>
+<font color="#434f54">&#47;&#47;pins of the stepper that moves the Y-axis</font>
+<font color="#5e6d03">#define</font> <font color="#000000">dirPin_3</font> <font color="#000000">32</font>
+<font color="#5e6d03">#define</font> <font color="#000000">stepPin_3</font> <font color="#000000">33</font>
+<font color="#5e6d03">#define</font> <font color="#000000">stepsPerRevolution</font> <font color="#000000">200</font>
+<font color="#5e6d03">#define</font> <font color="#000000">max_steps_1</font> <font color="#000000">2700</font>
+<font color="#5e6d03">#define</font> <font color="#000000">max_steps_up_down</font> <font color="#000000">250</font>
+<font color="#5e6d03">#define</font> <font color="#000000">max_steps_left_right</font> <font color="#000000">350</font>
+
+<font color="#434f54">&#47;&#47;These values will be used as reference for the previous position and rotation of the camera</font>
+<font color="#00979c">int</font> <font color="#000000">p_initial_distance</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+<font color="#00979c">int</font> <font color="#000000">p_initial_top_rotation</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+<font color="#00979c">int</font> <font color="#000000">p_initial_bottom_rotation</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font> 
+<font color="#00979c">int</font> <font color="#000000">step_speed</font> <font color="#434f54">=</font> <font color="#000000">900</font><font color="#000000">;</font>
+
+<font color="#434f54">&#47;&#47;The struct that is received by the slider</font>
+<font color="#00979c">typedef</font> <font color="#00979c">struct</font> <font color="#000000">struct_message</font> <font color="#000000">{</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">rotation_down</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">rotation_up</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">distance</font><font color="#000000">;</font>
+<font color="#000000">}</font> <font color="#000000">struct_message</font><font color="#000000">;</font>
+
+<font color="#434f54">&#47;&#47; Create a struct_message called myData that will be sent to the slider</font>
+<font color="#000000">struct_message</font> <font color="#000000">myData</font><font color="#000000">;</font>
+
+<font color="#434f54">&#47;&#47;Pin 26 is for the limit switch</font>
+<b><font color="#d35400">ezButton</font></b> <font color="#000000">limitSwitch</font><font color="#000000">(</font><font color="#000000">26</font><font color="#000000">)</font><font color="#000000">;</font>
+
+
+<font color="#434f54">&#47;&#47;This function takes the received values and moves the steppers so that teh camera reaches the desired valuse</font>
+<font color="#00979c">void</font> <font color="#000000">go_to</font><font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">y</font><font color="#434f54">,</font> <font color="#00979c">int</font> <font color="#000000">x</font><font color="#434f54">,</font> <font color="#00979c">int</font> <font color="#000000">m</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;
+ &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">m</font> <font color="#434f54">&gt;</font> <font color="#000000">p_initial_distance</font><font color="#000000">)</font>
+ &nbsp;<font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;The direction of the stepper is anticlockwise - so the platform moves either to the right or left</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">dirPin_1</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;The stepper moves for a specific amount of pins in that direction depending on where it was before and where it needs to be</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">for</font> <font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">i</font><font color="#434f54">=</font><font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font> <font color="#434f54">&lt;</font> <font color="#000000">(</font><font color="#000000">m</font> <font color="#434f54">-</font> <font color="#000000">p_initial_distance</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_1</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_1</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#434f54">&#47;&#47;Otherwise the same happens, only in the other direction</font>
+ &nbsp;<font color="#5e6d03">else</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">dirPin_1</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;The stepper moves for a specific amount of pins in that direction depending on what was its rotation before and what it needs to be now</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">for</font> <font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">i</font><font color="#434f54">=</font><font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font> <font color="#434f54">&lt;</font> <font color="#000000">(</font><font color="#000000">p_initial_distance</font> <font color="#434f54">-</font> <font color="#000000">m</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_1</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_1</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">y</font> <font color="#434f54">&gt;</font> <font color="#000000">p_initial_bottom_rotation</font><font color="#000000">)</font>
+ &nbsp;<font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;The direction of the stepper is clockwise, meaning the camera will rotate to its right</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">dirPin_3</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">for</font> <font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">i</font><font color="#434f54">=</font><font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font> <font color="#434f54">&lt;</font> <font color="#000000">(</font><font color="#000000">y</font> <font color="#434f54">-</font> <font color="#000000">p_initial_bottom_rotation</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_3</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_3</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#434f54">&#47;&#47;Otherwise the same happens, only in the other direction</font>
+ &nbsp;&nbsp;<font color="#5e6d03">else</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">dirPin_3</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">for</font> <font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">i</font><font color="#434f54">=</font><font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font> <font color="#434f54">&lt;</font> <font color="#000000">(</font><font color="#000000">p_initial_bottom_rotation</font> <font color="#434f54">-</font> <font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_3</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_3</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font> &nbsp;
+ &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">y</font> <font color="#434f54">&gt;</font> <font color="#000000">p_initial_top_rotation</font><font color="#000000">)</font>
+ &nbsp;<font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;The direction of the stepper is clockwise, meaning the camera will rotate upwards</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">dirPin_2</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;The stepper moves for a specific amount of pins in that direction depending on what was its rotation before and what it needs to be now</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">for</font> <font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">i</font><font color="#434f54">=</font><font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font> <font color="#434f54">&lt;</font> <font color="#000000">(</font><font color="#000000">y</font> <font color="#434f54">-</font> <font color="#000000">p_initial_top_rotation</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_2</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_2</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#434f54">&#47;&#47;Otherwise the same happens, only in the other direction</font>
+ &nbsp;&nbsp;<font color="#5e6d03">else</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">dirPin_2</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">for</font> <font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">i</font><font color="#434f54">=</font><font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font> <font color="#434f54">&lt;</font> <font color="#000000">(</font><font color="#000000">p_initial_top_rotation</font> <font color="#434f54">-</font> <font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_2</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_2</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">step_speed</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;the values representing the previous positionand rotations are updated with the values of the current position and rotations</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">p_initial_distance</font> <font color="#434f54">=</font> <font color="#000000">m</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">p_initial_top_rotation</font> <font color="#434f54">=</font> <font color="#000000">y</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">p_initial_bottom_rotation</font> <font color="#434f54">=</font> <font color="#000000">x</font><font color="#000000">;</font>
+<font color="#000000">}</font>
+
+
+<font color="#434f54">&#47;&#47;This is the function of the limit switch - which returns true if touched</font>
+<font color="#00979c">bool</font> <font color="#000000">limit</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;<font color="#000000">limitSwitch</font><font color="#434f54">.</font><font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; MUST call the loop() function first to use the ezButton library</font>
+
+ &nbsp;<font color="#5e6d03">if</font><font color="#000000">(</font><font color="#000000">limitSwitch</font><font color="#434f54">.</font><font color="#d35400">isPressed</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#5e6d03">or</font> <font color="#000000">limitSwitch</font><font color="#434f54">.</font><font color="#d35400">getState</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">==</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">{</font> <font color="#434f54">&#47;&#47;If the limit switch is touched, then it returns true, else it returns false</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;touched!&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">return</font> <font color="#00979c">true</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#5e6d03">else</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">return</font> <font color="#00979c">false</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;untouched!&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+<font color="#000000">}</font>
+
+
+<font color="#434f54">&#47;&#47;This function is called whenever a transmission starts, and essentially acts as the generic loop() functiom</font>
+<font color="#00979c">void</font> <font color="#000000">OnDataRecv</font><font color="#000000">(</font><font color="#00979c">const</font> <font color="#00979c">uint8_t</font> <font color="#434f54">*</font> <font color="#000000">mac</font><font color="#434f54">,</font> <font color="#00979c">const</font> <font color="#00979c">uint8_t</font> <font color="#434f54">*</font><font color="#000000">incomingData</font><font color="#434f54">,</font> <font color="#00979c">int</font> <font color="#000000">len</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;<font color="#d35400">memcpy</font><font color="#000000">(</font><font color="#434f54">&amp;</font><font color="#000000">myData</font><font color="#434f54">,</font> <font color="#000000">incomingData</font><font color="#434f54">,</font> <font color="#00979c">sizeof</font><font color="#000000">(</font><font color="#000000">myData</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47;I get the data I received from the controller</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">initial_distance</font> <font color="#434f54">=</font> <font color="#000000">myData</font><font color="#434f54">.</font><font color="#000000">distance</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">initial_top_rotation</font> <font color="#434f54">=</font> <font color="#000000">myData</font><font color="#434f54">.</font><font color="#000000">rotation_up</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">initial_bottom_rotation</font> <font color="#434f54">=</font> <font color="#000000">myData</font><font color="#434f54">.</font><font color="#000000">rotation_down</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47;I map the data accordingly for proper slider values</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">rotation_y</font> <font color="#434f54">=</font> <font color="#d35400">map</font><font color="#000000">(</font><font color="#000000">initial_top_rotation</font><font color="#434f54">,</font> <font color="#000000">0</font> <font color="#434f54">,</font> <font color="#000000">100</font> <font color="#434f54">,</font> <font color="#000000">0</font><font color="#434f54">,</font> <font color="#000000">250</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">rotation_x</font> <font color="#434f54">=</font> <font color="#d35400">map</font><font color="#000000">(</font><font color="#000000">initial_bottom_rotation</font><font color="#434f54">,</font> <font color="#000000">0</font><font color="#434f54">,</font> <font color="#000000">100</font><font color="#434f54">,</font> <font color="#000000">0</font><font color="#434f54">,</font> <font color="#000000">350</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">movement</font> <font color="#434f54">=</font> <font color="#d35400">map</font><font color="#000000">(</font><font color="#000000">initial_distance</font><font color="#434f54">,</font> <font color="#000000">2</font><font color="#434f54">,</font> <font color="#000000">48</font><font color="#434f54">,</font> <font color="#000000">0</font><font color="#434f54">,</font> <font color="#000000">2700</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47;The slider values for debugging</font>
+ &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#000000">rotation_y</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#000000">rotation_x</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#000000">movement</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47;The &#34;go_to&#34; function is called using the values received as parameters</font>
+ &nbsp;<font color="#000000">go_to</font><font color="#000000">(</font><font color="#000000">rotation_y</font><font color="#434f54">,</font> <font color="#000000">rotation_x</font><font color="#434f54">,</font> <font color="#000000">movement</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;
+<font color="#000000">}</font>
+
+
+<font color="#00979c">void</font> <font color="#5e6d03">setup</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;we initiate the steppers&#39; pins as outputs</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">stepPin_1</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">dirPin_1</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">stepPin_2</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">dirPin_2</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">stepPin_3</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">dirPin_3</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">115200</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">limitSwitch</font><font color="#434f54">.</font><font color="#d35400">setDebounceTime</font><font color="#000000">(</font><font color="#000000">50</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; set debounce time to 50 milliseconds - for the limit switch</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Set the spinning direction clockwise:</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">dirPin_1</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; Spin the stepper motor untill it reaches the limit switch </font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">while</font> <font color="#000000">(</font><font color="#000000">limit</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">==</font> <font color="#00979c">false</font><font color="#000000">)</font> <font color="#000000">{</font> &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_1</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">1000</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">stepPin_1</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delayMicroseconds</font><font color="#000000">(</font><font color="#000000">1000</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; Set device as a Wi-Fi Station</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">WiFi</font></b><font color="#434f54">.</font><font color="#d35400">mode</font><font color="#000000">(</font><font color="#00979c">WIFI_STA</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; Init ESP-NOW</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">esp_now_init</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">!=</font> <font color="#000000">ESP_OK</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;Error initializing ESP-NOW&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">return</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; Once ESPNow is successfully Init, we will register for recv CB to</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; get recv packer info</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">esp_now_register_recv_cb</font><font color="#000000">(</font><font color="#000000">OnDataRecv</font><font color="#000000">)</font><font color="#000000">;</font> 
+ &nbsp;&nbsp;&nbsp;
+
+<font color="#000000">}</font>
+<font color="#00979c">void</font> <font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font> 
+ &nbsp;<font color="#000000">}</font>
+
+</pre>
 
 ##The controller
 
@@ -111,7 +322,136 @@ The wiring of this controller was initially straightforward, however, I encounte
 
 The code was more challenging than expected, as the values I was getting from the potentiometers and ultrasonic sensors were noisy and perhaps even too accurate. That is why I decided to use [this smoothing algorithm](https://chrisruppel.com/blog/arduino-analog-signal-input-smoothing/) and also divided them from the sensors so that they would be more consistent -  even if less accurate. I also used [this library for the ultrasonic sensor](https://www.arduino.cc/reference/en/libraries/hcsr04-ultrasonic-sensor/) in hopes it would read out more accurate values. For transmission, I used [this tutorial](https://randomnerdtutorials.com/esp-now-esp32-arduino-ide/) and transmitted the three filtered integers to the slider every tenth of a second.
 
-(Code)
+<pre>
+<font color="#95a5a6">&#47;*</font>
+<font color="#95a5a6"> &nbsp;Rui Santos</font>
+<font color="#95a5a6"> &nbsp;Complete project details at </font><u><font color="#95a5a6">https:&#47;&#47;RandomNerdTutorials.com&#47;esp-now-esp32-arduino-ide&#47;</font></u><font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;</font>
+<font color="#95a5a6"> &nbsp;Permission is hereby granted, free of charge, to any person obtaining a copy</font>
+<font color="#95a5a6"> &nbsp;of this software and associated documentation files.</font>
+<font color="#95a5a6"> &nbsp;</font>
+<font color="#95a5a6"> &nbsp;The above copyright notice and this permission notice shall be included in all</font>
+<font color="#95a5a6"> &nbsp;copies or substantial portions of the Software.</font>
+<font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;Other sources:</font>
+<font color="#95a5a6"> &nbsp;</font><u><font color="#95a5a6">https:&#47;&#47;www.arduino.cc&#47;reference&#47;en&#47;libraries&#47;hcsr04-ultrasonic-sensor&#47;</font></u><font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;</font><u><font color="#95a5a6">https:&#47;&#47;chrisruppel.com&#47;blog&#47;arduino-analog-signal-input-smoothing&#47;</font></u><font color="#95a5a6"></font>
+<font color="#95a5a6">*&#47;</font>
+
+<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><font color="#000000">esp_now</font><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">WiFi</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">HCSR04</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+
+<font color="#434f54">&#47;&#47;Library used for the ultrasonic sensor</font>
+<b><font color="#d35400">HCSR04</font></b> <font color="#000000">hc</font><font color="#000000">(</font><font color="#000000">23</font><font color="#434f54">,</font> <font color="#000000">25</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;initialisation class HCSR04 (trig pin , echo pin)</font>
+
+
+<font color="#434f54">&#47;&#47; REPLACE WITH YOUR RECEIVER MAC Address</font>
+<font color="#00979c">uint8_t</font> <font color="#000000">broadcastAddress</font><font color="#000000">[</font><font color="#000000">]</font> <font color="#434f54">=</font> <font color="#000000">{</font><font color="#000000">0xC8</font><font color="#434f54">,</font> <font color="#000000">0xF0</font><font color="#434f54">,</font> <font color="#000000">0x9E</font><font color="#434f54">,</font> <font color="#000000">0x48</font><font color="#434f54">,</font> <font color="#000000">0x37</font><font color="#434f54">,</font> <font color="#000000">0x6C</font><font color="#000000">}</font><font color="#000000">;</font>
+
+<font color="#434f54">&#47;&#47;The data structure of the data that will be sent to the slider</font>
+
+<font color="#00979c">typedef</font> <font color="#00979c">struct</font> <font color="#000000">struct_message</font> <font color="#000000">{</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">rotation_down</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">rotation_up</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">distance</font><font color="#000000">;</font>
+<font color="#000000">}</font> <font color="#000000">struct_message</font><font color="#000000">;</font>
+
+<font color="#434f54">&#47;&#47; Create a struct_message called myData</font>
+<font color="#000000">struct_message</font> <font color="#000000">myData</font><font color="#000000">;</font>
+
+<font color="#000000">esp_now_peer_info_t</font> <font color="#000000">peerInfo</font><font color="#000000">;</font>
+
+<font color="#434f54">&#47;&#47; callback when data is sent</font>
+<font color="#00979c">void</font> <font color="#000000">OnDataSent</font><font color="#000000">(</font><font color="#00979c">const</font> <font color="#00979c">uint8_t</font> <font color="#434f54">*</font><font color="#000000">mac_addr</font><font color="#434f54">,</font> <font color="#000000">esp_now_send_status_t</font> <font color="#d35400">status</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;\r\nLast Packet Send Status:\t&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#d35400">status</font> <font color="#434f54">==</font> <font color="#000000">ESP_NOW_SEND_SUCCESS</font> <font color="#434f54">?</font> <font color="#005c5f">&#34;Delivery Success&#34;</font> <font color="#434f54">:</font> <font color="#005c5f">&#34;Delivery Fail&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+<font color="#000000">}</font>
+
+<font color="#434f54">&#47;&#47;This smooth function makes the data from the potentiometer less jittery by taking 10 samples and avereging them</font>
+<font color="#00979c">int</font> <font color="#000000">smooth</font><font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">sensor</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">i</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">value</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">numReadings</font> <font color="#434f54">=</font> <font color="#000000">10</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#5e6d03">for</font> <font color="#000000">(</font><font color="#000000">i</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font> <font color="#434f54">&lt;</font> <font color="#000000">numReadings</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; Read potentiometer sensor data.</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">value</font> <font color="#434f54">=</font> <font color="#000000">value</font> <font color="#434f54">+</font> <font color="#d35400">analogRead</font><font color="#000000">(</font><font color="#000000">sensor</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; 1ms pause adds more stability between reads.</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47; Take an average of all the readings.</font>
+ &nbsp;<font color="#000000">value</font> <font color="#434f54">=</font> <font color="#000000">value</font> <font color="#434f54">&#47;</font> <font color="#000000">numReadings</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47; Scale to 8 bits (0 - 255).</font>
+ &nbsp;<font color="#000000">value</font> <font color="#434f54">=</font> <font color="#000000">value</font> <font color="#434f54">&#47;</font> <font color="#000000">4</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#5e6d03">return</font> <font color="#000000">value</font><font color="#000000">;</font>
+<font color="#000000">}</font>
+<font color="#00979c">void</font> <font color="#5e6d03">setup</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+
+
+<font color="#434f54">&#47;&#47; &nbsp;Init Serial Monitor</font>
+ &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">115200</font><font color="#000000">)</font><font color="#000000">;</font>
+
+<font color="#434f54">&#47;&#47; Set device as a Wi-Fi Station</font>
+ &nbsp;<b><font color="#d35400">WiFi</font></b><font color="#434f54">.</font><font color="#d35400">mode</font><font color="#000000">(</font><font color="#00979c">WIFI_STA</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47; Init ESP-NOW</font>
+ &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">esp_now_init</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">!=</font> <font color="#000000">ESP_OK</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;Error initializing ESP-NOW&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">return</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47; Once ESPNow is successfully Init, we will register for Send CB to</font>
+ &nbsp;<font color="#434f54">&#47;&#47; get the status of Trasnmitted packet</font>
+ &nbsp;<font color="#000000">esp_now_register_send_cb</font><font color="#000000">(</font><font color="#000000">OnDataSent</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;
+ &nbsp;<font color="#434f54">&#47;&#47; Register peer</font>
+ &nbsp;<font color="#d35400">memcpy</font><font color="#000000">(</font><font color="#000000">peerInfo</font><font color="#434f54">.</font><font color="#000000">peer_addr</font><font color="#434f54">,</font> <font color="#000000">broadcastAddress</font><font color="#434f54">,</font> <font color="#000000">6</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">peerInfo</font><font color="#434f54">.</font><font color="#000000">channel</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font> &nbsp;
+ &nbsp;<font color="#000000">peerInfo</font><font color="#434f54">.</font><font color="#000000">encrypt</font> <font color="#434f54">=</font> <font color="#00979c">false</font><font color="#000000">;</font>
+ &nbsp;
+ &nbsp;<font color="#434f54">&#47;&#47; Add peer &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>
+ &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">esp_now_add_peer</font><font color="#000000">(</font><font color="#434f54">&amp;</font><font color="#000000">peerInfo</font><font color="#000000">)</font> <font color="#434f54">!=</font> <font color="#000000">ESP_OK</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;Failed to add peer&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">return</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font>
+<font color="#000000">}</font>
+
+
+<font color="#00979c">void</font> <font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;<font color="#434f54">&#47;&#47;Modifiying the data that will be sent to the slider to make it more appropriate and less jittery</font>
+ &nbsp;<font color="#434f54">&#47;&#47;The data is then placed in the struct that will be sent</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">down</font> <font color="#434f54">=</font> <font color="#000000">(</font><font color="#000000">smooth</font><font color="#000000">(</font><font color="#000000">36</font><font color="#000000">)</font><font color="#434f54">&#47;</font><font color="#000000">8</font><font color="#000000">)</font> <font color="#434f54">-</font> <font color="#000000">27</font><font color="#000000">;</font>
+ &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#000000">down</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">myData</font><font color="#434f54">.</font><font color="#000000">rotation_down</font> <font color="#434f54">=</font> <font color="#000000">down</font><font color="#000000">;</font>
+ &nbsp;
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">up</font> <font color="#434f54">=</font> <font color="#000000">(</font><font color="#000000">smooth</font><font color="#000000">(</font><font color="#000000">39</font><font color="#000000">)</font><font color="#434f54">&#47;</font><font color="#000000">8</font><font color="#000000">)</font><font color="#434f54">-</font> <font color="#000000">27</font><font color="#000000">;</font>
+ &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#000000">up</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">myData</font><font color="#434f54">.</font><font color="#000000">rotation_up</font> <font color="#434f54">=</font> <font color="#000000">up</font><font color="#000000">;</font>
+ &nbsp;
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">distance</font> <font color="#434f54">=</font> <font color="#00979c">int</font><font color="#000000">(</font><font color="#000000">hc</font><font color="#434f54">.</font><font color="#d35400">dist</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; return curent distance in serial</font>
+ &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#000000">distance</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">myData</font><font color="#434f54">.</font><font color="#000000">distance</font> <font color="#434f54">=</font> <font color="#000000">distance</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;<font color="#434f54">&#47;&#47;This is when the data is breadcast</font>
+ &nbsp;<font color="#000000">esp_err_t</font> <font color="#000000">result</font> <font color="#434f54">=</font> <font color="#000000">esp_now_send</font><font color="#000000">(</font><font color="#000000">broadcastAddress</font><font color="#434f54">,</font> <font color="#000000">(</font><font color="#00979c">uint8_t</font> <font color="#434f54">*</font><font color="#000000">)</font> <font color="#434f54">&amp;</font><font color="#000000">myData</font><font color="#434f54">,</font> <font color="#00979c">sizeof</font><font color="#000000">(</font><font color="#000000">myData</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;
+ &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">result</font> <font color="#434f54">==</font> <font color="#000000">ESP_OK</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;Sent with success&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#5e6d03">else</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;Error sending the data&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#434f54">&#47;&#47;This happens every tenth of a sencond</font>
+ &nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">100</font><font color="#000000">)</font><font color="#000000">;</font>
+<font color="#000000">}</font>
+
+</pre>
 
 #Conclusion
 

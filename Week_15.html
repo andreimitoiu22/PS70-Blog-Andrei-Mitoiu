@@ -22,15 +22,100 @@
 
 <xmp style="display:none;">
 
+#Andrei’s remote-controlled Camera slider 
 
-### About Me
 
-Here is an image:
-(not a good image) 
+(video)
 
-![image of embroidery](./01_intro/sew.png)
+##Why use this slider?
 
-And here is a [link](../index.html).
+My desire to create this slider stemmed from my desire to get the perfect shots. I wanted to combine the precise movements of a motorized camera slider with the artistic character of handheld movement through this machine. Furthermore, I also wanted to create a slider that does not need the often suboptimal and often frustrating bluetooth phone app to work, so the machine is completely phone-free. The motorized slider allows three movements: y-axis rotation, x-axis rotation and one-axis movement in space. This allows the user to create very dynamic shots, with very little restrictions. Furthermore, unlike many mainstream models, this slider is long and capable of large, precise movements.
+
+##How it works
+
+This project is split into 2 parts: the controller and the slider itself. Both of them will follow the same build model of a platform that is moving on an aluminum extrusion. The controller sends its data to the slider through radio, and after an initialisation process - the slider is able to move freely.
+
+##The slider
+
+The slider utilizes three stepper motors to control the three different kinds of movements. One is placed at one end of the slider (and controls a belt attached to a moving platform so that it moves in 2 directions), another one is on the moving platform, placed facing downwards towards a fixed gear so that it rotates the x-axis and the last one is also placed on the platform but sideways so that it controls the y-axis rotation of the camera through a gear system.
+
+(images of the stepper placements) (another) (another)
+
+###Hardware
+
+
+(3d MODEL)
+For the slider I used a variety of pieces to put everything together - most of which being 3D prints. Below, you can see the 3D model of the moving platform. Except for the aluminum extrusions, most of the parts that can be seen there were designed either through 3D printing, laser cutting or CNC machining techniques. I have used [Fusion 360’s gear plugin](https://www.youtube.com/watch?v=ZakT54JIhB8) to create all the wheels that I used. It is also worth noting that while the rough 3D model does not look like it, the platform was mostly built with aluminum extrusion. I knew this would allow me more flexibility when putting things together. To mount the stepper motors, I used [this model](https://grabcad.com/library/nema-17-nema-23-stepper-motor-mounts-1) I found online and modified it, and 3D printed it. I used two belt holders - which were designed to easily hold the belt - and two belt “maintainers” - which were designed to restrict the belt’s unnecessary jitter. 
+
+(The belt holders image)
+The only pieces that cannot be seen in the overall 3D models are the [flange bearings](https://www.grainger.com/product/36UY68?gucid=N:N:PS:Paid:GGL:CSM-2295:4P7A1P:20501231&gclid=Cj0KCQiA4uCcBhDdARIsAH5jyUlZcdpHFG8l-w3xomzAxmqNxBb17Zc-zmBkZBq9C6h_WUk_e3B20eUaAnh6EALw_wcB&gclsrc=aw.ds) - which enabled both the x-axis and y axis rotation - the actual stepper motors, the wheels that would enable the overall platform to move and a couple screws I eventually added somewhere at the bottom of the platfrom to help the stability of the x-axis rotation.
+(Image of the bearing) (Image of the wheels) (Image of bearings)(Image of screws)
+
+Here is an image of the final built platform, and also the reason why this version of the slider doesn’t move. It was technically challenging to fixate the wheels so that they would hold on to the extrusion - and the platform almost always fell down. At some point throughout the build, when I was able to temporarily get the wheels to maintain the heavy platform, the machine was working well - however I did not get to film it. At that point, I was confident that I could make it work in its entirety before filming it, and it eventually started to fall apart.
+(Image final built platform) (wheels issue)
+
+After the platform, another important element of the slider was what was on the rail. In the 3D model below, I designed a mount for the stepper which attaches itself to the edge of the aluminum extrusion to hold the motor in the right position. You may also see what was on the other side of the stepper motor - a specifically designed, freely-moving rotary belt maintainer. The legs I designed are also present.
+
+(3D model of the rail system thing)
+
+###Wiring
+
+The wiring of this piece was challenging, as I had three high-power stepper motors that had 4 wires each - with some moving around freely. The most challenging ones were the wires connected to the moving platform, as because the main hub was stationary, II had to make sure I didn't get them mixed up or accidentally disconnect them. I mostly used the primal science of tape to make sure the wires of the stepper motors were properly integrated on the moving platform, and I also used a wire protector to ensure the wires were hidden and safe from the environment. 
+(the wire protectos) (taping of wires)
+
+At the hub of all wiring, I used an ESP-32 and three [A4988 Stepper Motor Driver Carriers](https://www.pololu.com/product/1182,). I used the website’s wiring scheme as reference, and decided to use wall power for the voltage-demanding stepper motors (given that it is safer than batteries). I also used wall power to power up the ESP-32 with 5 volts. I also checked online which ESP-32 pins are [ok to use](https://randomnerdtutorials.com/esp32-pinout-reference-gpios/) and only used those that were ok. As you can see in the image below, everything was done on a breadboard as I am most comfortable with it. 
+
+(Image of wiring scheme website) (Image of my wiring)
+
+
+###Coding
+
+For coding, it turned out to be a lot more challenging than I expected. For starters, I knew that I had to create the initialisation process - the slider had to know its position by going to its right until reaching the limit switch. Then, the communication with the controller ensues, and depending on the data received from the controller, it would move the stepper motors so that the 2-axis rotation and platform position matched that of the controller. The data - as set by the controller (and seen later on the website) - is received every tenth of a second. However, I did not get the opportunity to test this code, because the slider itself did not work out optimally. What I can say is that the code would not have been as smooth as I would have wanted, as the stepper motors move sequentially, not at the same time. Having them working at the same time would have implied a lot more coding knowledge and time that I didn’t have. I found a lot of great use in [this tutorial](https://www.makerguides.com/a4988-stepper-motor-driver-arduino-tutorial/) as it helped me understand how to move the stepper motors with only two pins (direction and step pins) and without any library (for flexibility purposes) and also of [this tutorial](https://randomnerdtutorials.com/esp-now-esp32-arduino-ide/) to understand how the receiving end of the radio communication worked. 
+
+(CODE)
+
+##The controller
+
+This is the part of my project that did turn out well, as it works relatively as intended. It is made out of four main components: the legs, ultrasonic sensor, joystick and platform. The way the controller works is that you move the joystick on a rail while also being able to rotate it in two axes. This information is then sent through radio signals to the slider. Only two types of sensors were used for the build: an ultrasonic sensor and two potentiometers.
+
+
+###The hardware
+
+###The joystick
+
+(3D model)
+The joystick was the main, most complicated part of the build. I not only had to find ways to restrict the movements of the potentiometers so that they don’t reach their “dead zones” - in which they either have full resistance or none - but also create designs that placed them on top of one another accordingly.  That is why I created a hold for the y-axis rotation potentiometer with two small stoppers. Then, when designing the piece that would go onto the rotating part of the potentiometer, I would add a small extrusion that would go in between those two stoppers. This can be best understood through the photos below, as you can see in both how the mechanism restricted the movement on either side of the axis.
+(showcase the stopping mechanism for one) (for the other one)
+
+I implemented this design for both axis of rotation, however, what I realized in one of my earlier prototypes is that the joystick would not stay upwards by default. Therefore, I added two tensioned springs that would not allow the joystick to fall to its side.
+
+(image of springs)
+The last detail I added was a small 3D printed wall that would sit on the platform to help the ultrasonic sensor detect the distance more accurately. 
+
+(image of the ultrasonic wall)
+
+###The distance detecting system
+
+The ultrasonic sensor was relatively easy to implement, as I just adapted [this 3D model of the mount](https://www.thingiverse.com/thing:2465023) so that it could sit on the edge of the rail. The moving platform only utilizes 3 wheels, as it is more than enough for the small weight of the controller. The legs are similar to those used for the slider - only adapted for this kind of aluminum extrusion.
+
+(image of the sensor holder) (image of the platform on the back)
+
+###The wiring
+
+The wiring of this controller was initially straightforward, however, I encountered some issues. The soldering of the wires to the potentiometers was relatively challenging, as I had to add many extra layers to make sure the wires would not accidentally be ripped out. Also, the ADC pins I used for the potentiometers seemingly worked before I initialized the ESP-NOW. After some more research, I was able to find some pins that did not have the same errors. Below, you can see an image of the breadboard with all the wiring done. I also decided to strap the wires together so that they would not accidentally interfere with the ultrasonic sensor and ruin the readings.
+
+(breadboard) (image of the strapped wires)
+
+
+###The code
+
+The code was more challenging than expected, as the values I was getting from the potentiometers and ultrasonic sensors were noisy and perhaps even too accurate. That is why I decided to use [this smoothing algorithm](https://chrisruppel.com/blog/arduino-analog-signal-input-smoothing/) and also divided them from the sensors so that they would be more consistent -  even if less accurate. I also used [this library for the ultrasonic sensor](https://www.arduino.cc/reference/en/libraries/hcsr04-ultrasonic-sensor/) in hopes it would read out more accurate values. For transmission, I used [this tutorial](https://randomnerdtutorials.com/esp-now-esp32-arduino-ide/) and transmitted the three filtered integers to the slider every tenth of a second.
+
+(Code)
+
+#Conclusion
+
+While this project ultimately did not work out, I am satisfied with my work as I have learned a lot of very valuable things throughout this experience and overall course. While I am saddened that the slider did not work out, I might try to make another  version of it in the future.
 
 
 </xmp>
